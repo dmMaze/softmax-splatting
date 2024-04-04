@@ -9,7 +9,8 @@ import sys
 import torch
 import typing
 
-import softsplat # the custom softmax splatting layer
+# import softsplat # the custom softmax splatting layer
+from . import softsplat
 
 try:
     from .correlation import correlation # the custom cost volume layer
@@ -19,9 +20,9 @@ except:
 
 ##########################################################
 
-torch.set_grad_enabled(False) # make sure to not compute gradients for computational performance
+# torch.set_grad_enabled(False) # make sure to not compute gradients for computational performance
 
-torch.backends.cudnn.enabled = True # make sure to use cudnn for computational performance
+# torch.backends.cudnn.enabled = True # make sure to use cudnn for computational performance
 
 ##########################################################
 
@@ -31,18 +32,18 @@ args_strTwo = './images/two.png'
 args_strVideo = './videos/car-turn.mp4'
 args_strOut = './out.png'
 
-for strOption, strArg in getopt.getopt(sys.argv[1:], '', [
-    'model=',
-    'one=',
-    'two=',
-    'video=',
-    'out=',
-])[0]:
-    if strOption == '--model' and strArg != '': args_strModel = strArg # which model to use
-    if strOption == '--one' and strArg != '': args_strOne = strArg # path to the first frame
-    if strOption == '--two' and strArg != '': args_strTwo = strArg # path to the second frame
-    if strOption == '--video' and strArg != '': args_strVideo = strArg # path to a video
-    if strOption == '--out' and strArg != '': args_strOut = strArg # path to where the output should be stored
+# for strOption, strArg in getopt.getopt(sys.argv[1:], '', [
+#     'model=',
+#     'one=',
+#     'two=',
+#     'video=',
+#     'out=',
+# ])[0]:
+#     if strOption == '--model' and strArg != '': args_strModel = strArg # which model to use
+#     if strOption == '--one' and strArg != '': args_strOne = strArg # path to the first frame
+#     if strOption == '--two' and strArg != '': args_strTwo = strArg # path to the second frame
+#     if strOption == '--video' and strArg != '': args_strVideo = strArg # path to a video
+#     if strOption == '--out' and strArg != '': args_strOut = strArg # path to where the output should be stored
 # end
 
 ##########################################################
@@ -69,7 +70,7 @@ def backwarp(tenIn, tenFlow):
         tenHor = torch.linspace(start=-1.0, end=1.0, steps=tenFlow.shape[3], dtype=tenFlow.dtype, device=tenFlow.device).view(1, 1, 1, -1).repeat(1, 1, tenFlow.shape[2], 1)
         tenVer = torch.linspace(start=-1.0, end=1.0, steps=tenFlow.shape[2], dtype=tenFlow.dtype, device=tenFlow.device).view(1, 1, -1, 1).repeat(1, 1, 1, tenFlow.shape[3])
 
-        backwarp_tenGrid[str(tenFlow.shape)] = torch.cat([tenHor, tenVer], 1).cuda()
+        backwarp_tenGrid[str(tenFlow.shape)] = torch.cat([tenHor, tenVer], 1).to(device=tenFlow.device)
     # end
 
     tenFlow = torch.cat([tenFlow[:, 0:1, :, :] / ((tenIn.shape[3] - 1.0) / 2.0), tenFlow[:, 1:2, :, :] / ((tenIn.shape[2] - 1.0) / 2.0)], 1)
